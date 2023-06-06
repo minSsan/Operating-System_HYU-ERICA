@@ -53,6 +53,7 @@ typedef struct {
     pthread_mutex_t mutex;  /* 대기열을 접근하기 위해 사용하는 상호배타 락 */
     pthread_cond_t full;    /* 빈 대기열에 새 작업이 들어올 때까지 기다리는 곳 */
     pthread_cond_t empty;   /* 대기열에 빈 자리가 발생할 때까지 기다리는 곳 */
+    bool is_pool_complete;
 } pthread_pool_t;
 
 int pthread_pool_init(pthread_pool_t *pool, size_t bee_size, size_t queue_size);

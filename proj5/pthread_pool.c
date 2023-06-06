@@ -46,7 +46,8 @@ static void *worker(void *param)
         pool->q_len--;
 
         // ? 대기 중인 작업이 대기열에 들어갈 수 있도록 신호를 보낸다.
-        pthread_cond_signal(&(pool->empty));
+        if (!pool->is_pool_complete)
+            pthread_cond_signal(&(pool->empty));
         pthread_mutex_unlock(&(pool->mutex));
         
         // * 불러온 작업을 실행한다
@@ -100,6 +101,7 @@ int pthread_pool_init(pthread_pool_t *pool, size_t bee_size, size_t queue_size)
 
     // ? 스레드풀 실행 상태를 true로 설정
     pool->running = true;
+    pool->is_pool_complete = false;
 
     // ? 일꾼 스레드 생성 -> worker 실행하도록
     for (int i = 0; i < bee_size; ++i) {
@@ -171,6 +173,7 @@ int pthread_pool_shutdown(pthread_pool_t *pool, int how)
 
     // ? POOL_COMPLETE인 경우
     if (how == POOL_COMPLETE) {
+        pool->is_pool_complete = true;
         // ? 대기열에 남아있는 모든 작업을 마칠 때까지 대기한다.
         while (pool->q_len > 0) {
             pthread_mutex_unlock(&(pool->mutex));
